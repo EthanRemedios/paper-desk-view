@@ -1,0 +1,17 @@
+<!doctype html><html><head><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<meta name=robots content=noindex><title>Paper desk</title><style>body{font-family:-apple-system,Segoe UI,sans-serif;margin:0}
+#l{max-width:340px;margin:18vh auto;padding:24px;text-align:center}#l input,#l button{width:100%;box-sizing:border-box;padding:12px;margin:6px 0;font-size:16px;border-radius:10px;border:1px solid #ccc}
+#l button{background:#111;color:#fff;border:0}#e{color:#c62828;min-height:20px}</style></head><body>
+<form id=l><h2>Paper desk</h2><input id=u placeholder=Username autocomplete=username><input id=p type=password placeholder=Password autocomplete=current-password>
+<button>Unlock</button><div id=e></div></form><div id=app></div><script>
+const b=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function unlock(pw){const d=await (await fetch('data.enc.json?'+Date.now(),{cache:'no-store'})).json();
+const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+const key=await crypto.subtle.deriveKey({name:'PBKDF2',salt:b(d.salt),iterations:d.iter,hash:'SHA-256'},k,{name:'AES-GCM',length:256},false,['decrypt']);
+const pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b(d.iv)},key,b(d.ct));return JSON.parse(new TextDecoder().decode(pt));}
+function show(x){document.getElementById('l').remove();const s=document.createElement('style');s.textContent=x.css;document.head.appendChild(s);
+document.getElementById('app').innerHTML='<div style="max-width:960px;margin:auto;padding:16px">'+x.body+'</div>';}
+l.onsubmit=async ev=>{ev.preventDefault();e.textContent='Unlocking…';try{if(u.value.trim().toLowerCase()!=='ethan')throw 0;
+const x=await unlock(p.value);sessionStorage.pw=p.value;show(x);}catch(_){e.textContent='Wrong username or password';}};
+if(sessionStorage.pw)unlock(sessionStorage.pw).then(show).catch(()=>{});
+</script></body></html>
